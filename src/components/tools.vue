@@ -1,0 +1,59 @@
+<template>
+  <div>
+    <h3>AvailableTools</h3>
+    <b-container fluid class="tools" ref="tools">
+      <div class="tools-wrap"  ref="toolsWrap">
+        <block v-for="(block, i) in availableBlocks" :key="i" v-bind:block="block"></block>
+      </div>
+    </b-container>
+  </div>
+</template>
+
+<script>
+import store from "@/plugins/store";
+import block from "@/components/block";
+import ScrollThis from "@/scroll-this";
+
+export default {
+  name: "tools",
+  components: {
+    block
+  },
+  mounted() {
+    new ScrollThis(this.$refs.tools, this.$refs.toolsWrap)
+    // console.log(this.$refs.tools);
+  },
+  computed: {
+    availableBlocks() {
+      return store.getters.getAvailableBlocks;
+    }
+  },
+  methods: {}
+};
+</script>
+
+<style scoped>
+.tools {
+  max-width: 1000px;
+  width: 1000px;
+  height: 200px;
+  max-height: 200px;
+  border: 1px solid #ccc;
+  padding: 0;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  /* grid-gap: 10px;
+  display: grid;
+  grid-template-rows: repeat(10, 100px);
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); */
+}
+.tools-wrap {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left:0px;
+  top:0px;
+  touch-action: none;
+}
+</style>
