@@ -11,7 +11,11 @@ export default new Vuex.Store({
         availableBlocks: {
             ...defaultBlocks
         },
-        activeBlocks: {}
+        activeBlocks: {},
+        desktop: {
+            width: 600,
+            height: 400
+        }
     },
     mutations: {
 
@@ -25,6 +29,9 @@ export default new Vuex.Store({
         },
         getActiveBlocks: state => {
             return state.activeBlocks
+        },
+        getDesktopParams: state => {
+            return state.desktop
         }
     }
 });

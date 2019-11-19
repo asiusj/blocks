@@ -1,16 +1,19 @@
 <template>
   <div id="app">
     <tools></tools>
+    <desktop></desktop>
   </div>
 </template>
 
 <script>
 import tools from "@/components/tools"
+import desktop from "@/components/desktop"
 
 export default {
   name: "app",
   components: {
-    tools
+    tools,
+    desktop
   }
 };
 </script>

@@ -28,7 +28,14 @@ export default {
       return store.getters.getAvailableBlocks;
     }
   },
-  methods: {}
+  methods: {
+    activateBlock: (block) => {
+      console.log(block)
+      setTimeout(() => {
+        console.log(block)
+      }, 1000)
+    }
+  }
 };
 </script>
 
@@ -43,10 +50,7 @@ export default {
   display: flex;
   overflow: hidden;
   position: relative;
-  /* grid-gap: 10px;
-  display: grid;
-  grid-template-rows: repeat(10, 100px);
-  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); */
+  user-select: none;
 }
 .tools-wrap {
   display: flex;
@@ -55,5 +59,6 @@ export default {
   left:0px;
   top:0px;
   touch-action: none;
+  user-select: none;
 }
 </style>

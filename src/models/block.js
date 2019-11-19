@@ -1,9 +1,10 @@
-export class Block {
+export default class Block {
     constructor(width = 100, height = 100, name = "unnamed", max = 5) {
         this.width = width
         this.height = height
         this.name = name
         this.max = max
+        this.count = 0
     }
 }
 
