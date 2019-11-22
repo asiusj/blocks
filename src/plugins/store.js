@@ -11,17 +11,57 @@ export default new Vuex.Store({
         availableBlocks: {
             ...defaultBlocks
         },
-        activeBlocks: {},
+        activeBlocks: [],
         desktop: {
             width: 600,
             height: 400
+        },
+        overlay: false,
+        activationProcess: {
+            status: false,
+            block: null,
+            position: {
+                x: null,
+                y: null
+            }
         }
     },
     mutations: {
-
+        onChangeOverlay: (state, payload) => {
+            state.overlay = payload
+        },
+        onChangeActivationStatus: (state, payload) => {
+            state.activationProcess.status = payload.status
+            state.activationProcess.block = payload.block ? payload.block : null
+            state.activationProcess.position = payload.position
+        },
+        onBlockActivated: (state, payload) => {
+            state.activeBlocks = [...state.activeBlocks, payload];
+            state.availableBlocks[payload.type].count++;
+        },
+        onBlockDeleted: (state, payload) => {
+            state.activeBlocks = state.activeBlocks.filter((val) => {
+                if(val.id == payload) {
+                    state.availableBlocks[val.type].count--;
+                }
+                return val.id != payload
+            })
+        }
     },
     actions: {
-
+        setOverlayStatus: (ctx, payload) => {
+            ctx.commit("onChangeOverlay", payload)
+        },
+        setActivationStatus: (ctx, payload) => {
+            ctx.commit("onChangeActivationStatus", payload)
+            ctx.commit("onChangeOverlay", payload.status)
+        },
+        activateBlock: (ctx, payload) => {
+            ctx.commit("onBlockActivated", payload)
+        },
+        deleteBlock: (ctx, payload) => {
+            ctx.commit("onBlockDeleted", payload)
+        }
     },
     getters: {
         getAvailableBlocks: state => {
@@ -32,6 +72,12 @@ export default new Vuex.Store({
         },
         getDesktopParams: state => {
             return state.desktop
+        },
+        getOverlayStatus: state => {
+            return state.overlay
+        },
+        getActivationProcess: state => {
+            return state.activationProcess
         }
     }
 });

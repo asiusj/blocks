@@ -1,19 +1,41 @@
 <template>
-  <div id="app">
+  <div id="app" @mouseleave="stopActivation()" @mouseup="stopActivation()">
     <tools></tools>
     <desktop></desktop>
+    <overlay></overlay>
+    <phantom-block v-if="activationProcess.status"></phantom-block>
   </div>
 </template>
 
 <script>
-import tools from "@/components/tools"
-import desktop from "@/components/desktop"
+import tools from "@/components/tools";
+import desktop from "@/components/desktop";
+import overlay from "@/components/overlay";
+import phantomBlock from "@/components/phantom-block";
+import store from "@/plugins/store";
 
 export default {
   name: "app",
   components: {
     tools,
-    desktop
+    desktop,
+    overlay,
+    phantomBlock
+  },
+  computed: {
+    activationProcess() {
+      return store.getters.getActivationProcess;
+    }
+  },
+  methods: {
+    stopActivation() {
+      if(this.activationProcess.status)
+      store.dispatch("setActivationStatus", {
+        status: false,
+        block: null,
+        position: { x: null, y: null }
+      });
+    }
   }
 };
 </script>

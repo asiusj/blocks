@@ -1,91 +1,60 @@
 <template>
   <div
     class="block-item"
-    @mousedown="activateBlock(block)"
-    @mouseup="stopActivation()"
+    @mousedown="block.type ? false: activateBlock(block, $event)"
+    @mouseleave="abortActivation()"
     v-bind:style="{
       width: block.width + 'px',
-      height: block.height + 'px'
+      height: block.height + 'px',
+      cursor: phantom ? 'grabing': (block.type ? 'auto': 'grab')
       }"
   >
     <span>{{block.width + ' x ' + block.height}}</span>
-    <svg
-      v-bind:style="{
-      width: block.width + 'px',
-      height: block.height + 'px'
-      }"
-    >
-      <line
-        v-for="(line, i) in lines"
-        :key="i"
-        v-bind:x1="line.x1"
-        v-bind:y1="line.y1"
-        v-bind:x2="line.x2"
-        v-bind:y2="line.y2"
-        stroke="#8c8c8c"
-      />
-    </svg>
-    <span class="custom-badge">{{block.max-block.count}}</span>
+    <svg-lines v-bind:width="block.width" v-bind:height="block.height"></svg-lines>
+    <span class="custom-badge" v-if="!phantom && !block.type">{{block.max - block.count}}</span>
+    <span class="custom-badge delete-block" @click="deleteBlock(block.id)" v-if="block.type">&times;</span>
   </div>
 </template>
 
 <script>
-import Block from "@/models/block";
+import store from "@/plugins/store";
+import svgLines from "@/components/svg-lines";
 
 export default {
   name: "block",
+  components: {
+    svgLines
+  },
   props: {
-    block: Block
+    block: Object,
+    phantom: Boolean
+  },
+  computed: {
+    activationStatus() {
+      return store.getters.getActivationProcess.status;
+    }
   },
   data() {
-    let textOffset =
-      this.block.width < 70 ? 20 : this.block.height < 60 ? 5 : 10;
     return {
-      lines: [
-        {
-          x1: 0,
-          y1: 0,
-          x2:
-            this.block.width / 2 -
-            (this.block.width / this.block.height) * textOffset,
-          y2: this.block.height / 2 - textOffset
-        },
-        {
-          x1: 0,
-          y1: this.block.height,
-          x2:
-            this.block.width / 2 -
-            (this.block.width / this.block.height) * textOffset,
-          y2: this.block.height / 2 + textOffset
-        },
-        {
-          x1: this.block.width,
-          y1: 0,
-          x2:
-            this.block.width / 2 +
-            (this.block.width / this.block.height) * textOffset,
-          y2: this.block.height / 2 - textOffset
-        },
-        {
-          x1: this.block.width,
-          y1: this.block.height,
-          x2:
-            this.block.width / 2 +
-            (this.block.width / this.block.height) * textOffset,
-          y2: this.block.height / 2 + textOffset
-        }
-      ],
       timer: null
     };
   },
   methods: {
-    activateBlock(block) {
+    activateBlock(block, e) {
+      if (e.button) return;
       this.timer = setTimeout(() => {
-        console.log(block);
+        store.dispatch("setActivationStatus", {
+          status: true,
+          block: { ...block, type: this.$vnode.key },
+          position: { x: e.clientX, y: e.clientY }
+        });
       }, 1000);
     },
-    stopActivation() {
-      clearTimeout(this.timer)
+    abortActivation() {
+      clearTimeout(this.timer);
+    },
+    deleteBlock(id) {
+      store.dispatch("deleteBlock", id);
     }
   }
 };
@@ -102,6 +71,7 @@ export default {
   user-select: none;
   font-size: 0.8rem;
   position: relative;
+  flex: 1 0 auto;
 }
 .block-item * {
   user-select: none;
@@ -128,5 +98,8 @@ export default {
   align-items: center;
   top: 0;
   right: 0;
+}
+.delete-block {
+  cursor: pointer;
 }
 </style>
