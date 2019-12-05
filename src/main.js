@@ -1,9 +1,13 @@
 import Vue from 'vue'
 import App from './App.vue'
 import "./plugins/bootstrap-vue"
+import bm from "./block-manager"
 import store from "./plugins/store"
 
-// Vue.config.productionTip = false
+
+Vue.use(bm, {
+    gap: 5
+})
 
 new Vue({
     store,

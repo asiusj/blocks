@@ -3,6 +3,7 @@
     class="block-item"
     @mousedown="block.type ? false: activateBlock(block, $event)"
     @mouseleave="abortActivation()"
+    @mouseup="abortActivation()"
     v-bind:style="{
       width: block.width + 'px',
       height: block.height + 'px',
@@ -32,6 +33,9 @@ export default {
   computed: {
     activationStatus() {
       return store.getters.getActivationProcess.status;
+    },
+    desktopParams() {
+      return store.getters.getDesktopParams;
     }
   },
   data() {

@@ -14,7 +14,8 @@ export default new Vuex.Store({
         activeBlocks: [],
         desktop: {
             width: 600,
-            height: 400
+            height: 400,
+            object: null
         },
         overlay: false,
         activationProcess: {
@@ -38,15 +39,20 @@ export default new Vuex.Store({
         onBlockActivated: (state, payload) => {
             state.activeBlocks = [...state.activeBlocks, payload];
             state.availableBlocks[payload.type].count++;
+            Vue.prototype.$bm.spreadThis(state.desktop.object)
         },
         onBlockDeleted: (state, payload) => {
             state.activeBlocks = state.activeBlocks.filter((val) => {
-                if(val.id == payload) {
+                if (val.id == payload) {
                     state.availableBlocks[val.type].count--;
                 }
                 return val.id != payload
             })
-        }
+            Vue.prototype.$bm.spreadThis(state.desktop.object)
+        },
+        setDesktop: (state, payload) => {
+            state.desktop.object = payload
+        },
     },
     actions: {
         setOverlayStatus: (ctx, payload) => {
@@ -57,11 +63,13 @@ export default new Vuex.Store({
             ctx.commit("onChangeOverlay", payload.status)
         },
         activateBlock: (ctx, payload) => {
-            ctx.commit("onBlockActivated", payload)
+            if (Vue.prototype.$bm.checkNewStatePossible(payload, ctx.state.desktop.object))
+                ctx.commit("onBlockActivated", payload)
+
         },
         deleteBlock: (ctx, payload) => {
             ctx.commit("onBlockDeleted", payload)
-        }
+        },
     },
     getters: {
         getAvailableBlocks: state => {
