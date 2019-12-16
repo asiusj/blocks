@@ -5,10 +5,11 @@ class BlockManager {
     phantomCont = []
     phantomCheckResult = false
     tempNodeLink = null
-    constructor(gap = 0, sort = 'desc', autosize = false) {
+    constructor(gap = 0, sort = 'desc', autosize = false, store = null) {
         this.gap = gap
         this.sort = sort
         this.autosize = autosize
+        this.store = store
     }
     spreadThis(desktop) {
         this.cont = []
@@ -22,7 +23,13 @@ class BlockManager {
                 this.cont = this.sortAB(this.cont)
             }
             this.cont.forEach((item) => {
-                this.computePosition(this.desktopTree, item)
+                let error = {
+                    blockManagerMessage: "There are some issues in BlockManager algorithm, that will be fixed in next generations of BlockManager",
+                    success: false,
+                    lastObject: item
+                }
+                if(!this.computePosition(this.desktopTree, item))
+                    this.store.commit("onBlockActivationError", error)
             })
         }, 300)
     }
@@ -99,7 +106,7 @@ class BlockManager {
 
 const bm = {
     install(Vue, options) {
-        Vue.prototype.$bm = new BlockManager(options.gap, options.sort)
+        Vue.prototype.$bm = new BlockManager(options.gap, options.sort, options.autosize, options.store)
     }
 }
 

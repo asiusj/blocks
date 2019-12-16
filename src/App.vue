@@ -1,9 +1,16 @@
 <template>
-  <div id="app" @mouseleave="stopActivation()" @mouseup="stopActivation()">
+  <!-- <div
+    id="app"
+    @mouseleave="stopActivation()"
+    @mouseup="stopActivation()"
+    @touchend="stopActivation()"
+    @touchcancel="stopActivation()"
+  >-->
+  <div id="app" @mouseleave="stopActivation()" @touchcancel="stopActivation()">
     <tools></tools>
     <desktop></desktop>
     <overlay></overlay>
-    <phantom-block v-if="activationProcess.status"></phantom-block>
+    <phantom-block v-if="activationProcess.status" v-bind:block="activationProcess.block"></phantom-block>
   </div>
 </template>
 
@@ -11,8 +18,8 @@
 import tools from "@/components/tools";
 import desktop from "@/components/desktop";
 import overlay from "@/components/overlay";
-import phantomBlock from "@/components/phantom-block";
 import store from "@/plugins/store";
+import phantomBlock from "@/components/phantom-block";
 
 export default {
   name: "app",
@@ -29,12 +36,12 @@ export default {
   },
   methods: {
     stopActivation() {
-      if(this.activationProcess.status)
-      store.dispatch("setActivationStatus", {
-        status: false,
-        block: null,
-        position: { x: null, y: null }
-      });
+      if (this.activationProcess.status)
+        store.dispatch("setActivationStatus", {
+          status: false,
+          block: null,
+          position: { x: null, y: null }
+        });
     }
   }
 };

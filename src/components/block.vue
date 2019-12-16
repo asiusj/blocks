@@ -1,7 +1,10 @@
 <template>
   <div
     class="block-item"
-    @mousedown="block.type ? false: activateBlock(block, $event)"
+    v-if="block.count < block.max"
+    @mousedown="block.type ? false: startActivation(block, $event)"
+    @touchstart="block.type ? false: startActivation(block, $event)"
+    @touchend="activationDispatch($event)"
     @mouseleave="abortActivation()"
     @mouseup="abortActivation()"
     v-bind:style="{
@@ -14,25 +17,30 @@
     <svg-lines v-bind:width="block.width" v-bind:height="block.height"></svg-lines>
     <span class="custom-badge" v-if="!phantom && !block.type">{{block.max - block.count}}</span>
     <span class="custom-badge delete-block" @click="deleteBlock(block.id)" v-if="block.type">&times;</span>
+    <div class="bg-activation" v-bind:class="{ activation: activationInProcess }">
+      <activation-bg v-bind:block="block"></activation-bg>
+    </div>
   </div>
 </template>
 
 <script>
 import store from "@/plugins/store";
 import svgLines from "@/components/svg-lines";
+import activationBg from "@/components/activation-bg";
 
 export default {
   name: "block",
   components: {
-    svgLines
+    svgLines,
+    activationBg
   },
   props: {
     block: Object,
     phantom: Boolean
   },
   computed: {
-    activationStatus() {
-      return store.getters.getActivationProcess.status;
+    activationProcess() {
+      return store.getters.getActivationProcess;
     },
     desktopParams() {
       return store.getters.getDesktopParams;
@@ -40,22 +48,70 @@ export default {
   },
   data() {
     return {
-      timer: null
+      timer: null,
+      activationInProcess: false
     };
   },
   methods: {
-    activateBlock(block, e) {
+    activationDispatch(e) {
+      if (!this.activationProcess.status) {
+        this.abortActivation();
+        return;
+      }
+      let desktopPosition = this.desktopParams.object.getBoundingClientRect();
+      let pointX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      let pointY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      if (
+        pointX > desktopPosition.left &&
+        pointX < this.desktopParams.object.offsetWidth + desktopPosition.left &&
+        pointY > desktopPosition.top &&
+        pointY < this.desktopParams.object.offsetHeight + desktopPosition.top
+      ) {
+        this.activateBlock();
+        this.stopActivation();
+        this.abortActivation();
+      } else {
+        this.stopActivation();
+      }
+    },
+    activateBlock() {
+      if (this.activationProcess.status) {
+        var id = `b${this.activationProcess.block.width}${this.activationProcess.block.height}${this.activationProcess.block.count}`;
+        store.dispatch("activateBlock", {
+          ...this.activationProcess.block,
+          id
+        });
+      }
+    },
+    startActivation(block, e) {
       if (e.button) return;
+      this.activationInProcess = true;
       this.timer = setTimeout(() => {
+        var x = e.clientX;
+        var y = e.clientY;
+        if (e.touches) {
+          x = e.touches[e.touches.length - 1].clientX;
+          y = e.touches[e.touches.length - 1].clientY;
+        }
+        this.activationInProcess = false;
         store.dispatch("setActivationStatus", {
           status: true,
-          block: { ...block, type: this.$vnode.key },
-          position: { x: e.clientX, y: e.clientY }
+          block: {...block, type: this.$vnode.key},
+          position: { x, y }
         });
       }, 1000);
     },
     abortActivation() {
       clearTimeout(this.timer);
+      this.activationInProcess = false;
+    },
+    stopActivation() {
+      if (this.activationProcess.status)
+        store.dispatch("setActivationStatus", {
+          status: false,
+          block: null,
+          position: { x: null, y: null }
+        });
     },
     deleteBlock(id) {
       store.dispatch("deleteBlock", id);
@@ -81,6 +137,7 @@ export default {
   user-select: none;
   touch-action: none;
 }
+
 .block-item svg {
   position: absolute;
   top: 0;
@@ -105,5 +162,31 @@ export default {
 }
 .delete-block {
   cursor: pointer;
+}
+.bg-activation {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  opacity: 0.3;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.activation {
+  animation-duration: 1s;
+  animation-name: activation;
+  animation-iteration-count: initial;
+}
+
+@keyframes activation {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
 }
 </style>

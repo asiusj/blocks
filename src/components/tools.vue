@@ -27,14 +27,6 @@ export default {
     availableBlocks() {
       return store.getters.getAvailableBlocks;
     }
-  },
-  methods: {
-    activateBlock: (block) => {
-      console.log(block)
-      setTimeout(() => {
-        console.log(block)
-      }, 1000)
-    }
   }
 };
 </script>
@@ -42,7 +34,6 @@ export default {
 <style scoped>
 .tools {
   max-width: 1000px;
-  width: 1000px;
   height: 200px;
   max-height: 200px;
   border: 1px solid #ccc;

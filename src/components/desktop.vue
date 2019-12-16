@@ -2,10 +2,14 @@
   <b-container fluid>
     <h3>ActiveTools</h3>
     <div class="desktop-wrap">
-      <div ref="desktop" class="desktop">
-        <block v-for="(block, i) in activeBlocks" :key="i" v-bind:block="block"></block>
+      <div class="desktop-container">
+        <bm-console></bm-console>
+        <div ref="desktop" class="desktop">
+          <block v-for="(block, i) in activeBlocks" :key="i" v-bind:block="block"></block>
+        </div>
       </div>
-      <div class="phantom-desktop" @mouseup="activateBlock()" v-if="activationProcess.status"></div>
+      <!-- <phantom-desktop v-if="activationProcess.status"></phantom-desktop> -->
+      <div class="desktop-count">Active blocks: {{activeBlocks.length}}</div>
     </div>
   </b-container>
 </template>
@@ -13,11 +17,15 @@
 <script>
 import store from "@/plugins/store";
 import block from "@/components/block";
+import bmConsole from "@/components/block-manager-console";
+// import phantomDesktop from "@/components/phantom-desktop";
 
 export default {
   name: "desktop",
   components: {
-    block
+    block,
+    bmConsole,
+    // phantomDesktop
   },
   computed: {
     activeBlocks() {
@@ -31,15 +39,7 @@ export default {
     }
   },
   methods: {
-    activateBlock() {
-      if (this.activationProcess.status) {
-        var id = `b${this.activationProcess.block.width}${this.activationProcess.block.height}${this.activationProcess.block.count}`;
-        store.dispatch("activateBlock", {
-          ...this.activationProcess.block,
-          id
-        });
-      }
-    }
+    
   },
   mounted() {
     this.$store.commit("setDesktop", this.$refs.desktop);
@@ -48,7 +48,7 @@ export default {
 </script>
 
 <style scoped>
-.desktop {
+.desktop-container {
   border: 2px solid #cccccc;
   align-self: flex-end;
   z-index: 3;
@@ -57,6 +57,11 @@ export default {
   box-sizing: content-box;
   width: 600px;
   height: 400px;
+}
+
+.desktop {
+  width: 100%;
+  height: 100%;
 }
 
 .desktop * {
@@ -72,13 +77,15 @@ export default {
   margin: 0 auto;
   position: relative;
 }
-.phantom-desktop {
+
+.desktop-count {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -14px;
+  right: 10px;
   z-index: 4;
-  cursor: grabbing;
-  width: 600px;
-  height: 400px;
+  color: #8c8c8c;
+  font-size: 10px;
 }
+
+
 </style>

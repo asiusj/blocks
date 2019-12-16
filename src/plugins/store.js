@@ -25,7 +25,8 @@ export default new Vuex.Store({
                 x: null,
                 y: null
             }
-        }
+        },
+        activationErrors: []
     },
     mutations: {
         onChangeOverlay: (state, payload) => {
@@ -50,6 +51,9 @@ export default new Vuex.Store({
             })
             Vue.prototype.$bm.spreadThis(state.desktop.object)
         },
+        onBlockActivationError: (state, payload) => {
+            state.activationErrors = [...state.activationErrors, payload]
+        },
         setDesktop: (state, payload) => {
             state.desktop.object = payload
         },
@@ -65,6 +69,15 @@ export default new Vuex.Store({
         activateBlock: (ctx, payload) => {
             if (Vue.prototype.$bm.checkNewStatePossible(payload, ctx.state.desktop.object))
                 ctx.commit("onBlockActivated", payload)
+            else {
+                let error = {
+                    blockManagerMessage: "Cat't add this block now",
+                    success: false,
+                    lastObject: payload
+                }
+                ctx.commit("onBlockActivationError", error)
+            }
+
 
         },
         deleteBlock: (ctx, payload) => {
@@ -86,6 +99,9 @@ export default new Vuex.Store({
         },
         getActivationProcess: state => {
             return state.activationProcess
+        },
+        getActivationErrors: state => {
+            return state.activationErrors
         }
     }
 });

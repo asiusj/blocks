@@ -6,7 +6,8 @@ import store from "./plugins/store"
 
 
 Vue.use(bm, {
-    gap: 5
+    gap: 5,
+    store: store
 })
 
 new Vue({
