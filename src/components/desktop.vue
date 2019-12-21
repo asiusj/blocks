@@ -1,45 +1,42 @@
 <template>
-  <b-container fluid>
-    <h3>ActiveTools</h3>
-    <div class="desktop-wrap">
-      <div class="desktop-container">
-        <bm-console></bm-console>
-        <div ref="desktop" class="desktop">
-          <block v-for="(block, i) in activeBlocks" :key="i" v-bind:block="block"></block>
+  <b-container fluid class="desktop-row">
+    <b-row class="justify-content-center">
+      <h3>ActiveTools</h3>
+    </b-row>
+    <b-row>
+      <div class="desktop-wrap">
+        <div class="desktop-container">
+          <bm-console></bm-console>
+          <div ref="desktop" class="desktop">
+            <block v-for="(block, i) in activeBlocks" :key="i" v-bind:block="block"></block>
+          </div>
         </div>
+        <div class="desktop-count">Active blocks: {{activeBlocks.length}}</div>
       </div>
-      <!-- <phantom-desktop v-if="activationProcess.status"></phantom-desktop> -->
-      <div class="desktop-count">Active blocks: {{activeBlocks.length}}</div>
-    </div>
+    </b-row>
   </b-container>
 </template>
 
 <script>
-import store from "@/plugins/store";
 import block from "@/components/block";
 import bmConsole from "@/components/block-manager-console";
-// import phantomDesktop from "@/components/phantom-desktop";
 
 export default {
   name: "desktop",
   components: {
     block,
-    bmConsole,
-    // phantomDesktop
+    bmConsole
   },
   computed: {
     activeBlocks() {
-      return store.getters.getActiveBlocks;
+      return this.$store.getters.getActiveBlocks;
     },
     desktopParams() {
-      return store.getters.getDesktopParams;
+      return this.$store.getters.getDesktopParams;
     },
     activationProcess() {
-      return store.getters.getActivationProcess;
+      return this.$store.getters.getActivationProcess;
     }
-  },
-  methods: {
-    
   },
   mounted() {
     this.$store.commit("setDesktop", this.$refs.desktop);
@@ -87,5 +84,16 @@ export default {
   font-size: 10px;
 }
 
+.desktop-row {
+  padding-top: 30px;
+  padding-bottom: 16px;
+}
 
+
+@media (max-width: 768px) {
+  .desktop-container {
+    width: 100%;
+    height: 500px;
+  }
+}
 </style>

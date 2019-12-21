@@ -2,8 +2,9 @@
   <div
     class="block-item"
     v-if="block.count < block.max"
-    @mousedown="block.type ? false: startActivation(block, $event)"
-    @touchstart="block.type ? false: startActivation(block, $event)"
+    @mousedown="block.type ? false: startActivation({...block, type: $vnode.key}, $event)"
+    @touchstart="block.type ? false: startActivation({...block, type: $vnode.key}, $event)"
+    @touchmove="block.type || !activationProcess.status ? false: grabThis(phantomObject, $event, activationProcess.width, activationProcess.block.height)"
     @touchend="activationDispatch($event)"
     @mouseleave="abortActivation()"
     @mouseup="abortActivation()"
@@ -17,16 +18,23 @@
     <svg-lines v-bind:width="block.width" v-bind:height="block.height"></svg-lines>
     <span class="custom-badge" v-if="!phantom && !block.type">{{block.max - block.count}}</span>
     <span class="custom-badge delete-block" @click="deleteBlock(block.id)" v-if="block.type">&times;</span>
-    <div class="bg-activation" v-bind:class="{ activation: activationInProcess }">
+    <div
+      class="bg-activation"
+      v-if="!phantom && !block.type"
+      v-bind:class="{ activation: activationInProcess }"
+    >
       <activation-bg v-bind:block="block"></activation-bg>
     </div>
   </div>
 </template>
 
 <script>
-import store from "@/plugins/store";
 import svgLines from "@/components/svg-lines";
 import activationBg from "@/components/activation-bg";
+import { computed } from "@vue/composition-api";
+import useMove from "@/composition/move-this";
+import store from "@/plugins/store";
+import useActivation from "@/composition/activation";
 
 export default {
   name: "block",
@@ -38,84 +46,32 @@ export default {
     block: Object,
     phantom: Boolean
   },
-  computed: {
-    activationProcess() {
-      return store.getters.getActivationProcess;
-    },
-    desktopParams() {
-      return store.getters.getDesktopParams;
-    }
-  },
-  data() {
+  setup() {
+    const { grabThis: grabThis } = useMove();
+    const phantomObject = computed(() => {
+      return store.getters.getPhantomObject;
+    });
+    const {
+      activationProcess,
+      activationDispatch,
+      abortActivation,
+      desktopParams,
+      startActivation,
+      activationInProcess,
+      deleteBlock
+    } = useActivation();
+
     return {
-      timer: null,
-      activationInProcess: false
+      grabThis,
+      activationProcess,
+      activationDispatch,
+      abortActivation,
+      desktopParams,
+      startActivation,
+      phantomObject,
+      activationInProcess,
+      deleteBlock
     };
-  },
-  methods: {
-    activationDispatch(e) {
-      if (!this.activationProcess.status) {
-        this.abortActivation();
-        return;
-      }
-      let desktopPosition = this.desktopParams.object.getBoundingClientRect();
-      let pointX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-      let pointY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-      if (
-        pointX > desktopPosition.left &&
-        pointX < this.desktopParams.object.offsetWidth + desktopPosition.left &&
-        pointY > desktopPosition.top &&
-        pointY < this.desktopParams.object.offsetHeight + desktopPosition.top
-      ) {
-        this.activateBlock();
-        this.stopActivation();
-        this.abortActivation();
-      } else {
-        this.stopActivation();
-      }
-    },
-    activateBlock() {
-      if (this.activationProcess.status) {
-        var id = `b${this.activationProcess.block.width}${this.activationProcess.block.height}${this.activationProcess.block.count}`;
-        store.dispatch("activateBlock", {
-          ...this.activationProcess.block,
-          id
-        });
-      }
-    },
-    startActivation(block, e) {
-      if (e.button) return;
-      this.activationInProcess = true;
-      this.timer = setTimeout(() => {
-        var x = e.clientX;
-        var y = e.clientY;
-        if (e.touches) {
-          x = e.touches[e.touches.length - 1].clientX;
-          y = e.touches[e.touches.length - 1].clientY;
-        }
-        this.activationInProcess = false;
-        store.dispatch("setActivationStatus", {
-          status: true,
-          block: {...block, type: this.$vnode.key},
-          position: { x, y }
-        });
-      }, 1000);
-    },
-    abortActivation() {
-      clearTimeout(this.timer);
-      this.activationInProcess = false;
-    },
-    stopActivation() {
-      if (this.activationProcess.status)
-        store.dispatch("setActivationStatus", {
-          status: false,
-          block: null,
-          position: { x: null, y: null }
-        });
-    },
-    deleteBlock(id) {
-      store.dispatch("deleteBlock", id);
-    }
   }
 };
 </script>

@@ -26,7 +26,8 @@ export default new Vuex.Store({
                 y: null
             }
         },
-        activationErrors: []
+        activationErrors: [],
+        phantomBlockObject: null
     },
     mutations: {
         onChangeOverlay: (state, payload) => {
@@ -57,6 +58,9 @@ export default new Vuex.Store({
         setDesktop: (state, payload) => {
             state.desktop.object = payload
         },
+        onPhantomMounted: (state, payload) => {
+            state.phantomBlockObject = payload
+        }
     },
     actions: {
         setOverlayStatus: (ctx, payload) => {
@@ -65,6 +69,9 @@ export default new Vuex.Store({
         setActivationStatus: (ctx, payload) => {
             ctx.commit("onChangeActivationStatus", payload)
             ctx.commit("onChangeOverlay", payload.status)
+        },
+        setPhantomObject: (ctx, payload) => {
+            ctx.commit("onPhantomMounted", payload)
         },
         activateBlock: (ctx, payload) => {
             if (Vue.prototype.$bm.checkNewStatePossible(payload, ctx.state.desktop.object))
@@ -102,6 +109,9 @@ export default new Vuex.Store({
         },
         getActivationErrors: state => {
             return state.activationErrors
+        },
+        getPhantomObject: state => {
+            return state.phantomBlockObject
         }
     }
 });

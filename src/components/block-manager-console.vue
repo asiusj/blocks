@@ -19,13 +19,12 @@
 </template>
 
 <script>
-import store from "@/plugins/store";
 
 export default {
   name: "bm-console",
   computed: {
     activationErrors() {
-      return store.getters.getActivationErrors;
+      return this.$store.getters.getActivationErrors;
     }
   },
   data() {

@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import store from "@/plugins/store";
+
 import block from "@/components/block";
 import ScrollThis from "@/scroll-this";
 
@@ -21,11 +21,10 @@ export default {
   },
   mounted() {
     new ScrollThis(this.$refs.tools, this.$refs.toolsWrap)
-    // console.log(this.$refs.tools);
   },
   computed: {
     availableBlocks() {
-      return store.getters.getAvailableBlocks;
+      return this.$store.getters.getAvailableBlocks;
     }
   }
 };

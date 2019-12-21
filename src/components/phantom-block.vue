@@ -16,10 +16,10 @@
 </template>
 
 <script>
-import store from "@/plugins/store";
 import svgLines from "@/components/svg-lines";
-// import block from "@/components/block";
-import MoveThis from "@/move-this";
+import { onMounted, computed } from "@vue/composition-api";
+import store from "@/plugins/store";
+import useActivation from "@/composition/activation";
 
 export default {
   name: "phantom-block",
@@ -29,111 +29,36 @@ export default {
   components: {
     svgLines
   },
-  mounted() {
-    this.moveThis = new MoveThis(
-      this.$refs.phantomBlock,
-      this.activationProcess.block.width,
-      this.activationProcess.block.height
-    );
-  },
-  data() {
-    return {
-      moveThis: null
-    };
-  },
-  computed: {
-    activationProcess() {
-      return store.getters.getActivationProcess;
-    },
-    desktopParams() {
-      return store.getters.getDesktopParams;
-    },
-    left() {
-      if (this.activationProcess.status) {
-        let pos = this.activationProcess.position;
-        let block = this.activationProcess.block;
+  setup(props, context) {
+    onMounted(() => {
+      store.dispatch("setPhantomObject", context.refs.phantomBlock);
+    });
+
+    const {
+      activationProcess: activationProcess,
+      activationDispatch: activationDispatch
+    } = useActivation();
+
+    let left = computed(() => {
+      if (activationProcess.value.status) {
+        const pos = activationProcess.value.position;
+        const block = activationProcess.value.block;
         return pos.x - block.width / 2 + "px";
       } else {
         return 0;
       }
-    },
-    top() {
-      if (this.activationProcess.status) {
-        let pos = this.activationProcess.position;
-        let block = this.activationProcess.block;
+    });
+
+    let top = computed(() => {
+      if (activationProcess.value.status) {
+        const pos = activationProcess.value.position;
+        const block = activationProcess.value.block;
         return pos.y - block.height / 2 + "px";
       } else {
         return 0;
       }
-    }
-  },
-  methods: {
-    activationDispatch(e) {
-      if (!this.activationProcess.status) {
-        this.abortActivation();
-        return;
-      }
-      let desktopPosition = this.desktopParams.object.getBoundingClientRect();
-      let pointX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-      let pointY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-      if (
-        pointX > desktopPosition.left &&
-        pointX < this.desktopParams.object.offsetWidth + desktopPosition.left &&
-        pointY > desktopPosition.top &&
-        pointY < this.desktopParams.object.offsetHeight + desktopPosition.top
-      ) {
-        this.activateBlock();
-        this.stopActivation();
-        this.abortActivation();
-        this.moveThis.cancelListener();
-        this.moveThis.cancelTouchListener();
-      } else {
-        this.stopActivation();
-      }
-    },
-    activateBlock() {
-      if (this.activationProcess.status) {
-        var id = `b${this.activationProcess.block.width}${this.activationProcess.block.height}${this.activationProcess.block.count}`;
-        store.dispatch("activateBlock", {
-          ...this.activationProcess.block,
-          id
-        });
-      }
-    },
-    startActivation(block, e) {
-      if (e.button) return;
-      this.activationInProcess = true;
-      this.timer = setTimeout(() => {
-        var x = e.clientX;
-        var y = e.clientY;
-        if (e.touches) {
-          x = e.touches[e.touches.length - 1].clientX;
-          y = e.touches[e.touches.length - 1].clientY;
-        }
-
-        store.dispatch("setActivationStatus", {
-          status: true,
-          block,
-          position: { x, y }
-        });
-      }, 1000);
-    },
-    abortActivation() {
-      clearTimeout(this.timer);
-      this.activationInProcess = false;
-    },
-    stopActivation() {
-      if (this.activationProcess.status)
-        store.dispatch("setActivationStatus", {
-          status: false,
-          block: null,
-          position: { x: null, y: null }
-        });
-    }
-  },
-  destroyed() {
-    this.moveThis.cancelListener();
-    this.moveThis.cancelTouchListener();
+    });
+    return { left, top, activationDispatch };
   }
 };
 </script>
